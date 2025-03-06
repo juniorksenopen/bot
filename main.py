@@ -8,7 +8,7 @@ from datetime import datetime
 # Configurar Flask
 app = Flask(__name__)
 
-# Variables de entorno (Railway)
+# Variables de entorno (Render)
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
 
@@ -50,4 +50,5 @@ def slack_events():
     return jsonify({"status": "OK"}), 200
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000)
+    port = int(os.environ.get("PORT", 3000))  # Render asigna el puerto dinámicamente
+    app.run(host="0.0.0.0", port=port)
