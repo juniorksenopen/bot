@@ -28,6 +28,10 @@ def fuera_de_horario():
     hora_actual = datetime.now(COL_TIMEZONE).hour
     return hora_actual >= HORA_INICIO or hora_actual < HORA_FIN
 
+@app.route("/")
+def home():
+    return "El bot de Slack está funcionando correctamente."
+
 @app.route("/slack/events", methods=["POST"])
 def slack_events():
     data = request.json
