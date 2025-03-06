@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from datetime import datetime
+import pytz  # Importar para manejar zonas horarias
 
 # Configurar Flask
 app = Flask(__name__)
@@ -15,12 +16,16 @@ SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
 # Cliente de Slack
 client = WebClient(token=SLACK_BOT_TOKEN)
 
+# Zona horaria de Colombia
+COL_TIMEZONE = pytz.timezone("America/Bogota")
+
 # Horario fuera de oficina
-HORA_INICIO = 18  # 6 PM
-HORA_FIN = 9  # 9 AM
+HORA_INICIO = 14  # 2 PM en Colombia
+HORA_FIN = 9  # 9 AM en Colombia
 
 def fuera_de_horario():
-    hora_actual = datetime.now().hour
+    """Verifica si la hora actual en Colombia está fuera del horario laboral."""
+    hora_actual = datetime.now(COL_TIMEZONE).hour
     return hora_actual >= HORA_INICIO or hora_actual < HORA_FIN
 
 @app.route("/slack/events", methods=["POST"])
