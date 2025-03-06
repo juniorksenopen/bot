@@ -10,6 +10,10 @@ import pytz
 # Configurar Flask
 app = Flask(__name__)
 
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Bot de Slack activo 🚀"}), 200
+
 # Variables de entorno (Render)
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
