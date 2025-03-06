@@ -13,7 +13,7 @@ app = Flask(__name__)
 # Variables de entorno (Render)
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_SIGNING_SECRET = os.getenv("SLACK_SIGNING_SECRET")
-USER_ID = "U08GCDNPAC9"  # Tu ID de usuario de Slacssssssssk # Tu ID de usuario de Slack
+USER_ID = "U08GCDNPAC9"  # Tu ID de usuario de Slack
 
 # Cliente de Slack
 client = WebClient(token=SLACK_BOT_TOKEN)
