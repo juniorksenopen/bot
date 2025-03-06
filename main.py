@@ -1,10 +1,11 @@
 import os
 import logging
+import time
 from flask import Flask, request, jsonify
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from datetime import datetime
-import pytz  # Importar para manejar zonas horarias
+import pytz  
 
 # Configurar Flask
 app = Flask(__name__)
@@ -23,14 +24,14 @@ COL_TIMEZONE = pytz.timezone("America/Bogota")
 HORA_INICIO = 14  # 2 PM en Colombia
 HORA_FIN = 9  # 9 AM en Colombia
 
+# Diccionario para almacenar últimas respuestas por usuario
+ultimas_respuestas = {}
+TIEMPO_ESPERA = 600  # 10 minutos en segundos
+
 def fuera_de_horario():
     """Verifica si la hora actual en Colombia está fuera del horario laboral."""
     hora_actual = datetime.now(COL_TIMEZONE).hour
     return hora_actual >= HORA_INICIO or hora_actual < HORA_FIN
-
-@app.route("/")
-def home():
-    return "El bot de Slack está funcionando correctamente."
 
 @app.route("/slack/events", methods=["POST"])
 def slack_events():
@@ -40,14 +41,23 @@ def slack_events():
     if "challenge" in data:
         return jsonify({"challenge": data["challenge"]})
 
-    # Verificar si es un mensaje directo
+    # Verificar si es un mensaje de usuario
     event = data.get("event", {})
     if event.get("type") == "message" and "subtype" not in event:
         user_id = event.get("user")
         channel = event.get("channel")
-        
-        # Responder solo si es fuera de horario
-        if fuera_de_horario():
+        channel_type = event.get("channel_type")  # Detecta si es un DM
+
+        # Evitar responder al mismo usuario varias veces en poco tiempo
+        tiempo_actual = time.time()
+        if user_id in ultimas_respuestas and (tiempo_actual - ultimas_respuestas[user_id]) < TIEMPO_ESPERA:
+            return jsonify({"status": "OK"}), 200
+
+        # Guardar el tiempo de respuesta
+        ultimas_respuestas[user_id] = tiempo_actual
+
+        # Responder si es un DM o fuera de horario en canales
+        if channel_type == "im" or fuera_de_horario():
             try:
                 client.chat_postMessage(
                     channel=channel,
@@ -59,5 +69,5 @@ def slack_events():
     return jsonify({"status": "OK"}), 200
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 3000))  # Render asigna el puerto dinámicamente
+    port = int(os.environ.get("PORT", 3000))  
     app.run(host="0.0.0.0", port=port)
